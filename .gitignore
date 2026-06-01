@@ -15,5 +15,10 @@ ftbot/
 .omc/
 _payload.json
 
+# 시크릿 — 절대 커밋 금지 (토큰/키)
+.env
+*.env
+
 # OS
 .DS_Store
+bot/
