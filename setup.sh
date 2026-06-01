@@ -67,7 +67,10 @@ cat <<EOF
   2) $HERMES_HOME/.env 에 추가:
         DISCORD_BOT_TOKEN=<디스코드 봇 토큰>
         GATEWAY_ALLOW_ALL_USERS=true             # 친구 전원 응답 (친구서버면 OK)
-  3) 디스코드 연결:    hermes gateway setup       # 토큰/채널 등록
+        # ⚠ DISCORD_ALLOWED_USERS 는 설정하지 마라(비워 둔다). 채우면 그 ID만 응답되고
+        #   나머지는 Discord 어댑터 선필터(_is_allowed_user)에서 잘린다.
+        #   이 선필터는 allow-all 플래그를 안 보므로 빈 allowlist 로만 개방된다.
+  3) 디스코드 연결:    hermes gateway setup       # 토큰/채널 등록 (allowed users 물으면 비워 둘 것)
   4) 게이트웨이 시작:  hermes gateway start
 
 검증(퀀트 엔진):  $PYBIN $REPO/bt/quant_cli.py compare --symbol NVDA
