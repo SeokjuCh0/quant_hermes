@@ -1,0 +1,19 @@
+# Python 환경 (재생성 가능, 커밋 금지)
+**/.venv/
+**/__pycache__/
+*.pyc
+
+# 데이터·생성물 (재생성 가능)
+bt/data/
+bt/*.html
+
+# freqtrade 실험 — 백테스트는 backtesting.py로 전환했으므로 이 레포에서 제외
+# (디스크엔 남아있음, 형상관리 대상만 아님)
+ftbot/
+
+# OMC 상태·세션 산출물
+.omc/
+_payload.json
+
+# OS
+.DS_Store
