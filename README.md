@@ -22,12 +22,14 @@ quant_hermes/
 │   ├── quant_cli.py        # 에이전트 호출용 CLI (backtest/signal/compare)
 │   ├── run_backtest.py     # 종목 묶음 SMA 백테스트 (참고/탐색용)
 │   └── .venv/              # backtesting.py·yfinance (gitignore)
-├── personas/               # 봇 1개 = 폴더 1개 (= hermes 프로필 1개)
-│   └── magalyang/          # 마갈량 (템플릿 — 새 봇은 이 폴더 복사)
-│       ├── SOUL.md         # 페르소나 코어 (가끔 수정 → 재시작 필요)
-│       ├── bot.conf        # profile · model · provider
-│       └── skills/quant-analyst/   # SKILL.md (+references) — 다듬는 로직 (→ /reload-skills 로 라이브 갱신)
-├── deploy.sh               # bash deploy.sh <persona> → 프로필로 배포 + 재시작
+├── skills/                 # 공유 스킬 (4봇 공통 — bot.conf 의 skills= 로 가져감)
+│   └── quant-analyst/      # 분석 방법론 (퍼거슨이 여기 하나 고치면 전원 반영)
+├── personas/               # 봇 1개 = 폴더 1개 = hermes 프로필 1개 = 별도 봇 (각자 SOUL.md + bot.conf)
+│   ├── magalyang/          # 마갈량 (claude)            — 메인 분석
+│   ├── holland/            # 홀란 (codex)               — 비판자
+│   ├── anthony-taylor/     # 앤서니 테일러 (perplexity)  — 데드락 브레이커(3번째 분석가)
+│   └── ferguson/           # 퍼거슨 (gemini)            — 결정·정비 (+ skills/methodology-maintainer 전용)
+├── deploy.sh               # bash deploy.sh <persona> → 프로필 생성·config·스킬 배포(+설치된 봇은 재시작)
 └── setup.sh                # 새 머신 첫 부트스트랩 (venv·SSL인증서·의존성)
 ```
 
