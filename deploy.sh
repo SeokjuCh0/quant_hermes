@@ -92,6 +92,12 @@ if ! command -v hermes >/dev/null; then
   echo "  (hermes 미설치 — config/재시작 생략. 설치 후 다시 실행)"; exit 0
 fi
 
+# --- 2.5) 프로필 없으면 생성 (config set 은 미존재 프로필엔 안 먹힘 — exit 0이라 조용히 실패) ---
+if [ "$PROFILE" != "default" ] && ! hermes profile show "$PROFILE" >/dev/null 2>&1; then
+  echo "프로필 생성: $PROFILE"
+  hermes profile create "$PROFILE" </dev/null 2>&1 | tail -2 || echo "  (생성 실패 — 수동: hermes profile create $PROFILE)"
+fi
+
 # --- 3) config 적용 (bot.conf 의 나머지 key=value) ---
 # default 프로필이면 -p 없이, 명명 프로필이면 -p <profile> (bash 3.2 빈배열+set -u 회피용 함수)
 hp() { if [ "$PROFILE" = "default" ]; then hermes "$@"; else hermes -p "$PROFILE" "$@"; fi; }
