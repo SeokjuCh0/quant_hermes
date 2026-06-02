@@ -94,8 +94,8 @@ fi
 
 # --- 2.5) 프로필 없으면 생성 (config set 은 미존재 프로필엔 안 먹힘 — exit 0이라 조용히 실패) ---
 if [ "$PROFILE" != "default" ] && ! hermes profile show "$PROFILE" >/dev/null 2>&1; then
-  echo "프로필 생성: $PROFILE"
-  hermes profile create "$PROFILE" </dev/null 2>&1 | tail -2 || echo "  (생성 실패 — 수동: hermes profile create $PROFILE)"
+  echo "프로필 생성: $PROFILE (--no-skills: 번들 스킬 없이, 우리 스킬만)"
+  hermes profile create "$PROFILE" --no-skills </dev/null 2>&1 | tail -2 || echo "  (생성 실패 — 수동: hermes profile create $PROFILE --no-skills)"
 fi
 
 # --- 3) config 적용 (bot.conf 의 나머지 key=value) ---
@@ -137,6 +137,20 @@ PY
 fi
 
 # --- 게이트웨이 재시작 ---
-echo "게이트웨이 재시작…"
-hp gateway restart 2>&1 | tail -3 || echo "  (재시작 실패 — 토큰/프로필 확인 후 수동: hermes -p $PROFILE gateway restart)"
-echo "[done] $PERSONA 배포 완료 🫡"
+# 게이트웨이: 이미 서비스 설치된 프로필이면 재시작(변경 반영). 미설치(새 봇)면 여기서 안 띄운다
+# (토큰/인증이 먼저 — 포그라운드 행·토큰없는 유휴 게이트웨이 방지). 다음 단계만 안내.
+PLIST="ai.hermes.gateway"; [ "$PROFILE" != "default" ] && PLIST="ai.hermes.gateway-$PROFILE"
+if [ -f "$HOME/Library/LaunchAgents/$PLIST.plist" ]; then
+  echo "게이트웨이 재시작(변경 반영)…"
+  hp gateway restart 2>&1 | tail -3 || echo "  (재시작 실패 — 수동: hermes -p $PROFILE gateway restart)"
+  echo "[done] $PERSONA 배포·재시작 완료 🫡"
+else
+  echo "[다음] '$PERSONA' 게이트웨이 아직 미설치 — 토큰/인증 후 직접 시작:"
+  echo "   1) hermes -p $PROFILE model        # 모델 인증 (네 키)"
+  echo "   2) ~/.hermes/profiles/$PROFILE/.env 에:"
+  echo "        DISCORD_BOT_TOKEN=<이 봇 토큰>"
+  echo "        GATEWAY_ALLOW_ALL_USERS=true"
+  echo "        DISCORD_ALLOW_BOTS=mentions"
+  echo "   3) hermes -p $PROFILE gateway install   # 백그라운드 서비스로 시작"
+  echo "[done] '$PERSONA' 프로필·config·스킬 준비 완료 (위 3단계는 네 몫) 🫡"
+fi
