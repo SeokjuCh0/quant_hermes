@@ -11,26 +11,40 @@
 ```
 [개발] Claude Code / Codex 로 작성  →  [형상관리] GitHub(이 레포)  →  [실행] hermes 가 로드·실행 (Discord/터미널)
 ```
-hermes 안에서 코딩하지 않는다. 코드는 여기서 짜고 커밋, hermes는 symlink로 로드해 실행만.
+hermes 안에서 코딩하지 않는다. 코드는 여기서 짜고 커밋, hermes는 `deploy.sh`가 프로필로 **복사해** 실행만 한다 (symlink 아님 — `__QUANT_DIR__`를 클론 경로로 치환).
 
 ## 구조
 ```
 quant_hermes/
 ├── SPEC.md                 # 권위 설계 문서 (단일 기준)
 ├── ARCHITECTURE.md         # 상세/과거 설계 (참고)
-├── bt/
+├── bt/                     # 퀀트 엔진 (모든 봇 공유)
+│   ├── quant_cli.py        # 에이전트 호출용 CLI (backtest/signal/compare)
 │   ├── run_backtest.py     # 종목 묶음 SMA 백테스트 (참고/탐색용)
-│   └── quant_cli.py        # 에이전트 호출용 CLI (backtest/signal/compare)  [harness 생성 후]
 │   └── .venv/              # backtesting.py·yfinance (gitignore)
-└── hermes/
-    └── skills/quant-analyst/SKILL.md   # hermes harness 스킬  [harness 생성 후]
+├── personas/               # 봇 1개 = 폴더 1개 (= hermes 프로필 1개)
+│   └── magalyang/          # 마갈량 (템플릿 — 새 봇은 이 폴더 복사)
+│       ├── SOUL.md         # 페르소나 코어 (가끔 수정 → 재시작 필요)
+│       ├── bot.conf        # profile · model · provider
+│       └── skills/quant-analyst/   # SKILL.md (+references) — 다듬는 로직 (→ /reload-skills 로 라이브 갱신)
+├── deploy.sh               # bash deploy.sh <persona> → 프로필로 배포 + 재시작
+└── setup.sh                # 새 머신 첫 부트스트랩 (venv·SSL인증서·의존성)
 ```
 
 ## 빠른 사용 (도구 직접)
 ```bash
-bt/.venv/bin/python bt/run_backtest.py            # 현재 종목들 SMA 백테스트
-# (harness 생성 후) bt/.venv/bin/python bt/quant_cli.py backtest --symbol NVDA
+bt/.venv/bin/python bt/quant_cli.py backtest --symbol NVDA     # 전략 vs 보유 성과
+bt/.venv/bin/python bt/quant_cli.py signal   --symbol BTC-USD  # 현재 SMA 신호
+bt/.venv/bin/python bt/run_backtest.py                         # 종목 묶음 일괄
 ```
+
+## 봇 배포 + 라이브 반복
+```bash
+bash deploy.sh magalyang     # personas/magalyang → ~/.hermes/profiles/magalyang 배포 + 게이트웨이 재시작
+```
+- **라이브 튜닝 루프**: 봇 돌려놓고 → `personas/<봇>/skills/**/SKILL.md` 수정 → 디스코드에서 **`/reload-skills`** → 다음 메시지부터 적용(재시작 불필요). **자주 바꾸는 로직은 SKILL.md에** 둔다.
+- **SOUL.md(페르소나 코어)·모델 변경**은 `bash deploy.sh <봇>` (재시작 포함).
+- **새 봇 추가**: `personas/magalyang/`를 `personas/<새이름>/`로 복사 → `SOUL.md`·`bot.conf`(model/provider) 수정 → 그 프로필 `.env`에 새 봇 `DISCORD_BOT_TOKEN` → `bash deploy.sh <새이름>`. (봇마다 모델 다르게 두면 토론 다양성 ↑)
 
 ## 대상 종목 / 룰
 - 종목: 미국주식(TSLA, NVDA, PLTR …) + 크립토(BTC-USD)
